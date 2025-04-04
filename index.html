@@ -1,306 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZincShelf</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0b1d1f;
-      color: #e0f7f1;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      height: 100vh;
-    }
-    header {
-      background-color: #0f3c3e;
-      color: #e0f7f1;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .sidebar {
-      width: 300px;
-      background-color: #102728;
-      border-right: 1px solid #1a3a3b;
-      overflow-y: auto;
-      padding: 10px;
-      border-top-right-radius: 12px;
-      border-bottom-right-radius: 12px;
-    }
-    .main {
-      flex-grow: 1;
-      padding: 40px 20px 20px 20px;
-      overflow-y: auto;
-    }
-    .search-container {
-      margin-bottom: 10px;
-    }
-    .search-container input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #2a4e4f;
-      border-radius: 4px;
-      background-color: #0b2d2e;
-      color: #e0f7f1;
-    }
-    ul.tree {
-      list-style: none;
-      padding-left: 20px;
-    }
-    ul.tree li {
-      cursor: pointer;
-      margin: 5px 0;
-    }
-    ul.tree li span {
-      margin-left: 5px;
-    }
-    ul.tree li ul {
-      display: none;
-      padding-left: 20px;
-    }
-    ul.tree li.expanded > ul {
-      display: block;
-    }
-    .file-list {
-      margin-top: 30px;
-    }
-    .file-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px;
-      border-bottom: 1px solid #1a3a3b;
-    }
-    .file-row i {
-      margin-right: 10px;
-      color: #45b69c;
-    }
-    .file-actions button {
-      margin-left: 10px;
-      padding: 5px 8px;
-      background-color: #145f5c;
-      color: #e0f7f1;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .file-actions button:hover {
-      background-color: #1a7a76;
-    }
-    footer {
-      text-align: center;
-      font-size: 0.9em;
-      color: #a3bfbf;
-      padding: 10px;
-      border-top: 1px solid #1a3a3b;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZincShelf</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 </head>
 <body>
-  <div class="sidebar">
-    <div class="search-container">
-      <input type="search" id="searchInput" placeholder="Search Globally...">
-    </div>
-    <ul class="tree" id="sidebarTree"></ul>
-  </div>
-  <div class="main">
     <header>
-      <h1>ZincShelf</h1>
+        <h1>ZincShelf Extensions Directory</h1>
+        <p class="subtitle">Dark Theme</p>
     </header>
-    <div class="file-list" id="fileList"></div>
+
+    <div class="container">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search extensions and files...">
+        </div>
+        
+        <main id="extensions-container">
+            <div class="loading">Loading extensions...</div>
+        </main>
+    </div>
+
     <footer>
-      <br>Website Owner - Hignsine <br>
-      <br>Developer - Tony Macintosh<br>
+        <p>ZincShelf Extensions Directory Viewer | Dark Mode</p>
     </footer>
-  </div>
 
-<!-- Website Security Check. DONT EDIT -->
-  <script>
-(function(){
-  const u = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0hhbXB0ZXJQVy9pbmRleC9tYWluL0luZGV4Lmh0bWw=");
-  fetch(u).then(r => r.text()).then(t => {
-    if (!/<h1>\s*On\s*<\/h1>/i.test(t)) {
-      const m = document.createElement('div');
-      m.innerHTML = '<h2 style="color:#ff4c4c;text-align:center;padding:30px;">Website security check failed. Extensions unavailable.</h2>';
-      document.body.innerHTML = '';
-      document.body.appendChild(m);
-      throw new Error(atob('U2l0ZSBkaXNhYmxlZCBieSBzZWN1cml0eSBjaGVjaw=='));
-    }
-  }).catch(e => {
-    const m = document.createElement('div');
-    m.innerHTML = '<h2 style="color:#ff4c4c;text-align:center;padding:30px;">Website security check failed. Extensions unavailable.</h2>';
-    document.body.innerHTML = '';
-    document.body.appendChild(m);
-    throw e;
-  });
-})();
-  </script>
-
-  <script>
-    const sidebarTree = document.getElementById('sidebarTree');
-    const fileList = document.getElementById('fileList');
-    const searchInput = document.getElementById('searchInput');
-    const BASE_URL = "https://ZincCore.github.io/ZincShelf/extensions";
-
-    async function fetchDirectory(path = '') {
-      try {
-        const res = await fetch(`${BASE_URL}${path}/index.json`);
-        if (!res.ok) throw new Error('Failed to load index');
-        const data = await res.json();
-        return data.map(item => ({
-          ...item,
-          fullPath: `${path}/${item.name}`
-        }));
-      } catch (err) {
-        console.error(`Error fetching ${path}:`, err);
-        return [];
-      }
-    }
-
-    async function buildTree(parentEl, path = '') {
-      const items = await fetchDirectory(path);
-      items.forEach(item => {
-        const li = document.createElement('li');
-        const icon = document.createElement('i');
-        const span = document.createElement('span');
-        span.textContent = item.name;
-        if (item.type === 'dir') {
-          icon.className = 'fas fa-folder';
-          li.appendChild(icon);
-          li.appendChild(span);
-          const sublist = document.createElement('ul');
-          li.appendChild(sublist);
-          li.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            li.classList.toggle('expanded');
-            if (li.classList.contains('expanded') && sublist.childElementCount === 0) {
-              await buildTree(sublist, item.fullPath);
-            }
-            renderFiles(item.fullPath);
-          });
-        } else {
-          icon.className = 'fas fa-file';
-          li.appendChild(icon);
-          li.appendChild(span);
-          li.addEventListener('click', () => window.open(`${BASE_URL}${item.fullPath}`, '_blank'));
-        }
-        parentEl.appendChild(li);
-      });
-    }
-
-    function renderFiles(path) {
-      fileList.innerHTML = '';
-      fetchDirectory(path).then(items => {
-        items.forEach(item => {
-          if (item.type === 'file') {
-            const row = document.createElement('div');
-            row.className = 'file-row';
-
-            const left = document.createElement('div');
-            left.innerHTML = `<i class="fas fa-file"></i>${item.name}`;
-
-            const actions = document.createElement('div');
-            actions.className = 'file-actions';
-
-            const btnLink = document.createElement('button');
-            btnLink.textContent = 'Copy Link';
-            btnLink.onclick = () => navigator.clipboard.writeText(`${BASE_URL}${item.fullPath}`);
-
-            const btnCopy = document.createElement('button');
-            btnCopy.textContent = 'Copy File Contents';
-            btnCopy.onclick = async () => {
-              try {
-                const res = await fetch(`${BASE_URL}${item.fullPath}`);
-                const text = await res.text();
-                await navigator.clipboard.writeText(text);
-              } catch {
-                alert("Failed to copy file contents");
-              }
-            };
-
-            const btnDownload = document.createElement('button');
-            btnDownload.textContent = 'Download';
-            btnDownload.onclick = async () => {
-              const link = document.createElement('a');
-              link.href = `${BASE_URL}${item.fullPath}`;
-              link.download = item.name;
-              link.click();
-            };
-
-            actions.append(btnLink, btnCopy, btnDownload);
-            row.append(left, actions);
-            fileList.appendChild(row);
-          }
-        });
-      });
-    }
-
-    async function getAllFiles(path = '') {
-      let files = [];
-      const items = await fetchDirectory(path);
-      for (const item of items) {
-        if (item.type === 'file') {
-          files.push({ ...item, fullPath: `${path}/${item.name}` });
-        } else if (item.type === 'dir') {
-          const subFiles = await getAllFiles(`${path}/${item.name}`);
-          files = files.concat(subFiles);
-        }
-      }
-      return files;
-    }
-
-    searchInput.addEventListener('input', async () => {
-      const query = searchInput.value.toLowerCase();
-      const allFiles = await getAllFiles();
-      const filtered = allFiles.filter(file => file.name.toLowerCase().includes(query));
-      fileList.innerHTML = '';
-      filtered.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'file-row';
-
-        const left = document.createElement('div');
-        left.innerHTML = `<i class="fas fa-file"></i>${item.name}`;
-
-        const actions = document.createElement('div');
-        actions.className = 'file-actions';
-
-        const btnLink = document.createElement('button');
-        btnLink.textContent = 'Copy Link';
-        btnLink.onclick = () => navigator.clipboard.writeText(`${BASE_URL}${item.fullPath}`);
-
-        const btnCopy = document.createElement('button');
-        btnCopy.textContent = 'Copy File Contents';
-        btnCopy.onclick = async () => {
-          try {
-            const res = await fetch(`${BASE_URL}${item.fullPath}`);
-            const text = await res.text();
-            await navigator.clipboard.writeText(text);
-          } catch {
-            alert("Failed to copy file contents");
-          }
-        };
-
-        const btnDownload = document.createElement('button');
-        btnDownload.textContent = 'Download';
-        btnDownload.onclick = async () => {
-          const link = document.createElement('a');
-          link.href = `${BASE_URL}${item.fullPath}`;
-          link.download = item.name;
-          link.click();
-        };
-
-        actions.append(btnLink, btnCopy, btnDownload);
-        row.append(left, actions);
-        fileList.appendChild(row);
-      });
-    });
-
-    buildTree(sidebarTree);
-  </script>
+    <script src="script.js"></script>
 </body>
-</html>
+</html> 

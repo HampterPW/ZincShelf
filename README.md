@@ -1,14 +1,39 @@
-# **ZincShelf**  
+# ZincShelf Extensions Directory
 
-**ZincShelf** is an upcoming curated collection of over **840+ Turbowarp plugins**, gathered from across the community to enhance and extend the functionality of the Turbowarp Scratch-based editor. Whether you're looking for new tools, creative enhancements, or utilities, ZincShelf brings them all together in one place.  
+A simple website that lists all files in the extensions directory using index.json files. This website is designed to work on GitHub Pages.
 
----
+## Features
 
-## Features  
+- Lists all extensions in the repository
+- Displays file and directory structure for each extension
+- Search functionality to filter extensions
+- Responsive design for mobile and desktop
+- Direct links to files and external repositories
 
-- **Massive Collection**: Over **840+ plugins** from the TurboWarp community.  
-- **Centralized Resource**: All plugins organized and accessible in one place.  
-- **Regular Updates**: Continuously updated every 1-3 days with new additions.  
+## How to Use
 
----
+1. Visit the GitHub Pages URL for this repository
+2. Browse through the list of extensions
+3. Click on directories to expand and view their contents
+4. Click on files to view their content
+5. Use the search box to filter extensions by name
 
+## Development
+
+This website is built with plain HTML, CSS, and JavaScript. No build process or dependencies are required.
+
+## Deployment
+
+The website is automatically deployed to GitHub Pages when changes are pushed to the main branch.
+
+## Structure
+
+- `index.html` - Main HTML file
+- `styles.css` - CSS styles
+- `script.js` - JavaScript for loading and displaying extensions
+
+The website loads data from the `extensions/index.json` file and dynamically fetches individual extension data from their respective index.json files.
+
+## License
+
+Same as the parent repository. 
