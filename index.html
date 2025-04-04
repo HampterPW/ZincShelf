@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pluginwarp</title>
-    <link rel="stylesheet" href="Style.css">
+    <title>ZincShelf</title>
+    
 
     <!-- Website Sharing MetaData -->
     <meta name="description" content="Free extensions for Turbowarp!">
@@ -39,30 +39,150 @@
     <!--Script Loading-->
     <script src="ExtensionLoader.js"></script>
     <script src="ExtensionDownloader.js"></script>
-    <script>
-	    // Create the popup container
-const popup = document.createElement('div');
-popup.style.position = 'fixed';
-popup.style.top = '30%';
-popup.style.left = '40%';
-popup.style.background = 'white';
-popup.style.border = '1px solid #ccc';
-popup.style.padding = '20px';
-popup.style.zIndex = '1000';
-popup.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
-popup.innerHTML = `
-  <p>Pluginwarp has been discontunued</p>
-  <button id="closePopup">Close</button>
-`;
+    <style>
+	    /* Basic Reset stinky */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    padding: 20px;
 
-document.body.appendChild(popup);
+    /* Variables stinky */
+    --main-color: #e93a3a;
+    --hover-scale: 1.005
+}
+h2.ImpactHeader {
+    text-align: center;
+}
+h1 {
+    text-align: center;
+    color: #444;
+    margin-bottom: 20px;
+}
 
-// Close the popup when close button is clicked
-popup.addEventListener('click', (e) => {
-  if (e.target.id === 'closePopup') {
-    popup.remove();
-  }
-});
-    </script>
+/* File Tree Styles */
+.file-tree {
+    list-style: none;
+    padding-left: 20px;
+}
+
+.folder, .file, .backbutton {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    margin: 5px 0;
+    cursor: pointer;
+    padding: 5px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.folder:hover, .file:hover, .backbutton:hover{
+    background-color: var(--main-color); /* #4CAF50;*/
+    color: white;
+    transform: scale(var(--hover-scale));
+}
+
+.file:hover .ExtCredits {
+    color: white;
+    transform: scale(var(--hover-scale));
+}
+
+.folder::before {
+    content: '📁 ';
+    transition: transform 0.3s ease;
+}
+
+.file::before {
+    content: '📄 ';
+    transition: transform 0.3s ease;
+}
+
+.backbutton::before {
+    content: '◀ ';
+    transition: transform 0.3s ease;
+}
+
+/* Folder Expansion Animation */
+.folder + .subfolder {
+    display: none;
+    padding-left: 20px;
+    list-style: none;
+    opacity: 0;
+    max-height: 0;
+    transition: opacity 0.3s ease, max-height 0.5s ease;
+}
+
+.folder.expanded + .subfolder {
+    display: block;
+    opacity: 1;
+    max-height: 500px;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: block;
+    margin: 0 auto;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    bottom: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.Credits{
+    text-align: center;
+}
+
+.filename{
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+
+.Link{
+    color: #7E017A;
+    text-decoration: none;
+}
+
+.Link:hover{
+    color: #BC03B5;
+}
+
+.DiscordServer{
+    text-align: center;
+}
+
+.DiscordServer img {
+    height: 1em;
+    margin-right: 0.5em;
+}
+
+.SearchBox{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 1%;
+}
+
+.Footer{
+    color: #000; /* Fallback for older browsers */
+    color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+    padding-top: 5%;
+}
+
+    </style>
 </body>
 </html>
