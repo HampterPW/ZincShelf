@@ -1,21 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZincShelf</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <header>
-        <h1>ZincShelf Extensions Directory</h1>
-        <p class="subtitle">Dark Theme</p>
+        <h1>ZincShelf</h1>
+        <div class="toolbar">
+            <button id="theme-toggle" aria-label="Toggle dark/light mode">
+                <i class="fas fa-sun"></i>
+            </button>
+            <button id="shortcuts-btn" aria-label="Keyboard shortcuts">
+                <i class="fas fa-keyboard"></i>
+            </button>
+            <button id="favorites-btn" aria-label="Show favorites">
+                <i class="fas fa-star"></i>
+                <span class="favorites-count">0</span>
+            </button>
+        </div>
     </header>
 
     <div class="container">
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Search extensions and files...">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search-input" placeholder="Search extensions and files... (Press '/' to focus)">
+            <span class="search-shortcut">/</span>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" id="all-btn">All Extensions</button>
+            <button class="tab-btn" id="favorites-tab-btn">Favorites <span class="favorites-count">0</span></button>
         </div>
         
         <main id="extensions-container">
@@ -23,8 +42,53 @@
         </main>
     </div>
 
+    <div id="shortcuts-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Keyboard Shortcuts</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="shortcuts-table">
+                    <tr>
+                        <td><kbd>/</kbd></td>
+                        <td>Focus search box</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Esc</kbd></td>
+                        <td>Clear search / Close modal</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>T</kbd></td>
+                        <td>Toggle dark/light theme</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>F</kbd></td>
+                        <td>View favorites</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>?</kbd></td>
+                        <td>Show keyboard shortcuts</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>↑</kbd>/<kbd>↓</kbd></td>
+                        <td>Navigate extensions</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Enter</kbd></td>
+                        <td>Open selected extension/file</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>S</kbd></td>
+                        <td>Favorite/unfavorite selected extension</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        <p>Highsine - Owner<br>Tony Macintosh - Developer<br></p>
+        <p>ZincShelf Extensions Directory | <button id="footer-theme-toggle">Toggle Theme</button></p>
     </footer>
 
     <script src="script.js"></script>

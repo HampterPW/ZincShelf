@@ -1,9 +1,309 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // DOM elements
     const extensionsContainer = document.getElementById('extensions-container');
     const searchInput = document.getElementById('search-input');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const footerThemeToggleBtn = document.getElementById('footer-theme-toggle');
+    const shortcutsBtn = document.getElementById('shortcuts-btn');
+    const shortcutsModal = document.getElementById('shortcuts-modal');
+    const closeBtn = document.querySelector('.close-btn');
+    const allBtn = document.getElementById('all-btn');
+    const favoritesTabBtn = document.getElementById('favorites-tab-btn');
+    const favoritesBtn = document.getElementById('favorites-btn');
     
+    // State variables
     let extensionsData = [];
     let allFiles = []; // To store all files for searching
+    let currentExtensionIndex = -1; // For keyboard navigation
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    let currentView = 'all'; // 'all' or 'favorites'
+    
+    // Initialize the UI
+    updateFavoritesCount();
+    initTheme();
+    
+    // Theme toggle functions
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+    }
+    
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    }
+    
+    function updateThemeIcon(theme) {
+        themeToggleBtn.innerHTML = theme === 'dark' 
+            ? '<i class="fas fa-sun"></i>' 
+            : '<i class="fas fa-moon"></i>';
+    }
+    
+    // Favorites functions
+    function updateFavoritesCount() {
+        const count = favorites.length;
+        document.querySelectorAll('.favorites-count').forEach(el => {
+            el.textContent = count;
+        });
+    }
+    
+    function toggleFavorite(extensionName) {
+        const index = favorites.indexOf(extensionName);
+        
+        if (index === -1) {
+            // Add to favorites
+            favorites.push(extensionName);
+            showToast(`Added ${extensionName} to favorites`);
+        } else {
+            // Remove from favorites
+            favorites.splice(index, 1);
+            showToast(`Removed ${extensionName} from favorites`);
+            
+            // If in favorites view, we might need to re-render
+            if (currentView === 'favorites') {
+                renderFavorites();
+            }
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+        updateFavoritesCount();
+        
+        // Update UI
+        updateFavoriteButtons();
+    }
+    
+    function updateFavoriteButtons() {
+        document.querySelectorAll('.favorite-btn').forEach(btn => {
+            const extensionName = btn.dataset.extension;
+            if (favorites.includes(extensionName)) {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fas fa-star"></i>';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="far fa-star"></i>';
+            }
+        });
+    }
+    
+    function showToast(message) {
+        // Create toast element if it doesn't exist
+        let toast = document.getElementById('toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.backgroundColor = 'var(--primary)';
+            toast.style.color = 'white';
+            toast.style.padding = '10px 15px';
+            toast.style.borderRadius = '4px';
+            toast.style.boxShadow = '0 2px 5px var(--shadow)';
+            toast.style.zIndex = '1000';
+            toast.style.transition = 'transform 0.3s, opacity 0.3s';
+            toast.style.transform = 'translateY(100px)';
+            toast.style.opacity = '0';
+            document.body.appendChild(toast);
+        }
+        
+        // Update message and show
+        toast.textContent = message;
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            toast.style.transform = 'translateY(100px)';
+            toast.style.opacity = '0';
+        }, 3000);
+    }
+    
+    function renderFavorites() {
+        const favoriteExtensions = extensionsData.filter(ext => 
+            favorites.includes(ext.name)
+        );
+        
+        if (favoriteExtensions.length === 0) {
+            extensionsContainer.innerHTML = `
+                <div class="no-results">
+                    <p>No favorite extensions yet</p>
+                    <p class="text-muted">Star extensions to add them to your favorites</p>
+                </div>
+            `;
+            return;
+        }
+        
+        renderExtensions(favoriteExtensions);
+    }
+    
+    // Modal functions
+    function showShortcutsModal() {
+        shortcutsModal.classList.add('show');
+    }
+    
+    function hideShortcutsModal() {
+        shortcutsModal.classList.remove('show');
+    }
+    
+    // Event listeners
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    footerThemeToggleBtn.addEventListener('click', toggleTheme);
+    
+    shortcutsBtn.addEventListener('click', showShortcutsModal);
+    closeBtn.addEventListener('click', hideShortcutsModal);
+    shortcutsModal.addEventListener('click', (e) => {
+        if (e.target === shortcutsModal) {
+            hideShortcutsModal();
+        }
+    });
+    
+    // Tab switching
+    allBtn.addEventListener('click', () => {
+        if (currentView !== 'all') {
+            allBtn.classList.add('active');
+            favoritesTabBtn.classList.remove('active');
+            currentView = 'all';
+            renderExtensions(extensionsData);
+        }
+    });
+    
+    favoritesTabBtn.addEventListener('click', () => {
+        if (currentView !== 'favorites') {
+            favoritesTabBtn.classList.add('active');
+            allBtn.classList.remove('active');
+            currentView = 'favorites';
+            renderFavorites();
+        }
+    });
+    
+    favoritesBtn.addEventListener('click', () => {
+        if (currentView !== 'favorites') {
+            favoritesTabBtn.classList.add('active');
+            allBtn.classList.remove('active');
+            currentView = 'favorites';
+            renderFavorites();
+        }
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        // Don't handle keyboard shortcuts if user is typing in search
+        if (document.activeElement === searchInput && e.key !== 'Escape') {
+            return;
+        }
+        
+        const extensionCards = document.querySelectorAll('.extension-card');
+        
+        switch (e.key) {
+            case '/':
+                // Focus search
+                e.preventDefault();
+                searchInput.focus();
+                break;
+                
+            case 'Escape':
+                // Clear search or close modal
+                if (shortcutsModal.classList.contains('show')) {
+                    hideShortcutsModal();
+                } else if (document.activeElement === searchInput) {
+                    searchInput.value = '';
+                    searchInput.blur();
+                    if (currentView === 'all') {
+                        renderExtensions(extensionsData);
+                    } else {
+                        renderFavorites();
+                    }
+                }
+                break;
+                
+            case 't':
+            case 'T':
+                // Toggle theme
+                toggleTheme();
+                break;
+                
+            case 'f':
+            case 'F':
+                // View favorites
+                if (currentView !== 'favorites') {
+                    favoritesTabBtn.classList.add('active');
+                    allBtn.classList.remove('active');
+                    currentView = 'favorites';
+                    renderFavorites();
+                }
+                break;
+                
+            case '?':
+                // Show keyboard shortcuts
+                showShortcutsModal();
+                break;
+                
+            case 'ArrowUp':
+                // Navigate up in extension list
+                if (extensionCards.length > 0) {
+                    e.preventDefault();
+                    currentExtensionIndex = Math.max(0, currentExtensionIndex - 1);
+                    focusExtensionCard(extensionCards[currentExtensionIndex]);
+                }
+                break;
+                
+            case 'ArrowDown':
+                // Navigate down in extension list
+                if (extensionCards.length > 0) {
+                    e.preventDefault();
+                    if (currentExtensionIndex === -1) {
+                        currentExtensionIndex = 0;
+                    } else {
+                        currentExtensionIndex = Math.min(extensionCards.length - 1, currentExtensionIndex + 1);
+                    }
+                    focusExtensionCard(extensionCards[currentExtensionIndex]);
+                }
+                break;
+                
+            case 's':
+            case 'S':
+                // Star/unstar current extension
+                if (currentExtensionIndex !== -1 && extensionCards.length > 0) {
+                    const card = extensionCards[currentExtensionIndex];
+                    const extensionName = card.querySelector('.extension-title').textContent;
+                    toggleFavorite(extensionName);
+                }
+                break;
+                
+            case 'Enter':
+                // Open current extension or toggle directory
+                if (currentExtensionIndex !== -1 && extensionCards.length > 0) {
+                    const card = extensionCards[currentExtensionIndex];
+                    const link = card.querySelector('.external-link');
+                    if (link) {
+                        window.open(link.href, '_blank');
+                    } else {
+                        // Toggle directory if it's a directory
+                        // (Specific implementation depends on your directory structure)
+                    }
+                }
+                break;
+        }
+    });
+    
+    function focusExtensionCard(card) {
+        // Remove focus from all cards
+        document.querySelectorAll('.extension-card').forEach(c => {
+            c.classList.remove('focused');
+        });
+        
+        // Add focus to the current card
+        card.classList.add('focused');
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
     
     // Fetch the main index.json file
     fetch('extensions/index.json')
@@ -25,7 +325,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const searchTerm = searchInput.value.toLowerCase();
                 
                 if (!searchTerm) {
-                    renderExtensions(extensionsData);
+                    if (currentView === 'all') {
+                        renderExtensions(extensionsData);
+                    } else {
+                        renderFavorites();
+                    }
                     return;
                 }
                 
@@ -53,7 +357,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 // Combine both results
-                const combinedResults = [...new Set([...filteredExtensions, ...matchingFileExtensions])];
+                let combinedResults = [...new Set([...filteredExtensions, ...matchingFileExtensions])];
+                
+                // If in favorites view, filter by favorites
+                if (currentView === 'favorites') {
+                    combinedResults = combinedResults.filter(ext => favorites.includes(ext.name));
+                }
+                
                 renderExtensions(combinedResults);
                 
                 // Highlight matching files in the UI
@@ -128,6 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
         extensions.forEach(extension => {
             const extensionCard = document.createElement('div');
             extensionCard.className = 'extension-card';
+            extensionCard.setAttribute('role', 'region');
+            extensionCard.setAttribute('aria-label', `Extension: ${extension.name}`);
             
             const extensionHeader = document.createElement('div');
             extensionHeader.className = 'extension-header';
@@ -136,12 +448,32 @@ document.addEventListener('DOMContentLoaded', () => {
             extensionTitle.className = 'extension-title';
             extensionTitle.textContent = extension.name;
             
+            const extensionActions = document.createElement('div');
+            extensionActions.className = 'extension-actions';
+            
+            const favoriteBtn = document.createElement('button');
+            favoriteBtn.className = 'favorite-btn';
+            favoriteBtn.dataset.extension = extension.name;
+            
+            if (favorites.includes(extension.name)) {
+                favoriteBtn.classList.add('active');
+                favoriteBtn.innerHTML = '<i class="fas fa-star"></i>';
+            } else {
+                favoriteBtn.innerHTML = '<i class="far fa-star"></i>';
+            }
+            
+            favoriteBtn.setAttribute('aria-label', `Favorite ${extension.name}`);
+            favoriteBtn.addEventListener('click', () => toggleFavorite(extension.name));
+            
             const extensionType = document.createElement('span');
             extensionType.className = `extension-type type-${extension.type}`;
             extensionType.textContent = extension.type;
             
+            extensionActions.appendChild(favoriteBtn);
+            extensionActions.appendChild(extensionType);
+            
             extensionHeader.appendChild(extensionTitle);
-            extensionHeader.appendChild(extensionType);
+            extensionHeader.appendChild(extensionActions);
             
             extensionCard.appendChild(extensionHeader);
             
@@ -152,6 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 linkElement.className = 'external-link';
                 linkElement.textContent = 'Visit External Repository';
                 linkElement.target = '_blank';
+                linkElement.rel = 'noopener noreferrer';
                 extensionCard.appendChild(linkElement);
             } else if (extension.type === 'dir') {
                 // Directory - fetch the contents
@@ -203,8 +536,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileLink = document.createElement('a');
             fileLink.className = 'file-link';
             fileLink.href = file.path;
+            fileLink.setAttribute('aria-label', `${file.type}: ${file.name}`);
+            
             if (file.type !== 'dir') {
                 fileLink.target = '_blank';
+                fileLink.rel = 'noopener noreferrer';
             }
             
             const fileName = document.createElement('span');
@@ -213,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add icon based on file type
             const fileIcon = document.createElement('span');
             fileIcon.className = 'file-icon';
+            fileIcon.setAttribute('aria-hidden', 'true');
             
             if (file.type === 'dir') {
                 fileIcon.innerHTML = '📁';
