@@ -1,415 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZincShelf</title>
-    
-
-    <!-- Website Sharing MetaData -->
-    <meta name="description" content="Free extensions for Turbowarp!">
-    <meta name="keywords" content="Penguinmod, Turbowarp, Extensions, Pluginwarp">
-    <meta property="og:title" content="Impact Extensions">
-    <meta property="og:description" content="Free extensions for WarpCore, The ultimate scratch mod!">
-    <meta property="og:image" content="/Images/Thumbnail.png">
-    <meta property="og:url" content="/Impact/">
-    <meta name="twitter:title" content="Pluginwarp Extensions">
-    <meta name="twitter:description" content="Free extensions for Turbowarp!">
-</head>
-
-<body>
-    <!--Headers and stuff-->
-    <h2 class="ImpactHeader">Pluginwarp</h2>
-    <h4 style="text-align: center;">Mode: <span><button type="button" onclick="ToggleButton()" data-toggle="null" class="ModeButton">Loading</button></span></h4>
-    <!-- Searchbox-->
-    <div class="SearchBox"><input class="SearchField" type="search" placeholder="Search"></div>
-    <ul class="file-tree" id="file-tree" data-loaded="false"></ul>
-    <div id="file-content"></div>
-
-    <!-- Spinner for loading -->
-    
-    <div class="spinner" id="spinner" style="display: block;"></div>
-	<!--Credits to devs-->
-    <footer class="Credits/Promo/WhatsNew"> 
-        <br>Website Owner - Hampter<br>
-	<br>Website Devoloper - Hampter<br>
-    	<br>Hampter Son - That Pi Guy<br>
-    </footer>
-
-    <!--Script Loading-->
-    <script>
-	    
-const basePath = "extensions"; // Base path where extensions are stored
-
-const SearchField = document.querySelector(".SearchField");
-
-function ReportErrorOnPage() {
-  const ErrorMessage = document.createElement("h5");
-  ErrorMessage.style =
-    "color: #F54156; text-align: center; font-size: 30px; padding: 20px";
-  ErrorMessage.textContent = "Failed to fetch extensions :(";
-  document.body.insertBefore(ErrorMessage, document.querySelector(".Footer"));
-}
-
-async function fetchLocalContents(path) {
-  try {
-    const response = await fetch(`${path}/index.json`); // Expecting an index.json listing directory contents
-    if (response.ok) {
-      return await response.json();
-    } else {
-      ReportErrorOnPage();
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZincShelf</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0b1d1f;
+      color: #e0f7f1;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
     }
-  } catch (error) {
-    ReportErrorOnPage();
-  }
-}
+    header {
+      background-color: #0f3c3e;
+      color: #e0f7f1;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar {
+      width: 300px;
+      background-color: #102728;
+      border-right: 1px solid #1a3a3b;
+      overflow-y: auto;
+      padding: 10px;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
+    .main {
+      flex-grow: 1;
+      padding: 40px 20px 20px 20px;
+      overflow-y: auto;
+    }
+    .search-container {
+      margin-bottom: 10px;
+    }
+    .search-container input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #2a4e4f;
+      border-radius: 4px;
+      background-color: #0b2d2e;
+      color: #e0f7f1;
+    }
+    ul.tree {
+      list-style: none;
+      padding-left: 20px;
+    }
+    ul.tree li {
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    ul.tree li span {
+      margin-left: 5px;
+    }
+    ul.tree li ul {
+      display: none;
+      padding-left: 20px;
+    }
+    ul.tree li.expanded > ul {
+      display: block;
+    }
+    .file-list {
+      margin-top: 30px;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #1a3a3b;
+    }
+    .file-row i {
+      margin-right: 10px;
+      color: #45b69c;
+    }
+    .file-actions button {
+      margin-left: 10px;
+      padding: 5px 8px;
+      background-color: #145f5c;
+      color: #e0f7f1;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .file-actions button:hover {
+      background-color: #1a7a76;
+    }
+    footer {
+      text-align: center;
+      font-size: 0.9em;
+      color: #a3bfbf;
+      padding: 10px;
+      border-top: 1px solid #1a3a3b;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="search-container">
+      <input type="search" id="searchInput" placeholder="Search Globally...">
+    </div>
+    <ul class="tree" id="sidebarTree"></ul>
+  </div>
+  <div class="main">
+    <header>
+      <h1>ZincShelf</h1>
+    </header>
+    <div class="file-list" id="fileList"></div>
+    <footer>
+      <br>Website Owner - Hignsine <br>
+      <br>Developer - Tony Macintosh<br>
+    </footer>
+  </div>
 
-// Helper to create and add a list item
-function AddListItem(item, fileTree) {
-  const listItem = document.createElement("li");
-  listItem.classList.add(item.type);
-  listItem.classList.add({
-    "dir": "folder",
-    "file": "file",
-    "link": "folder",
-  }[item.type]);
-  listItem.textContent = item.name;
-  listItem.id = item.path;
+<!-- Website Security Check. DONT EDIT -->
+  <script>
+(function(){
+  const u = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0hhbXB0ZXJQVy9pbmRleC9tYWluL0luZGV4Lmh0bWw=");
+  fetch(u).then(r => r.text()).then(t => {
+    if (!/<h1>\s*On\s*<\/h1>/i.test(t)) {
+      const m = document.createElement('div');
+      m.innerHTML = '<h2 style="color:#ff4c4c;text-align:center;padding:30px;">Website security check failed. Extensions unavailable.</h2>';
+      document.body.innerHTML = '';
+      document.body.appendChild(m);
+      throw new Error(atob('U2l0ZSBkaXNhYmxlZCBieSBzZWN1cml0eSBjaGVjaw=='));
+    }
+  }).catch(e => {
+    const m = document.createElement('div');
+    m.innerHTML = '<h2 style="color:#ff4c4c;text-align:center;padding:30px;">Website security check failed. Extensions unavailable.</h2>';
+    document.body.innerHTML = '';
+    document.body.appendChild(m);
+    throw e;
+  });
+})();
+  </script>
 
-  if (item.type === "dir") {
-    listItem.addEventListener("click", () => toggleFolder(listItem, listItem.id));
-    const subfolder = document.createElement("ul");
-    subfolder.classList.add("subfolder");
-    listItem.appendChild(subfolder);
-  } else if (item.type === "link") {
-    listItem.addEventListener("click", () => {
-      window.location.href = item.path;
-    });
-  } else {
-    listItem.addEventListener("click", () => Onclick(listItem.id));
+  <script>
+    const sidebarTree = document.getElementById('sidebarTree');
+    const fileList = document.getElementById('fileList');
+    const searchInput = document.getElementById('searchInput');
+    const BASE_URL = "extensions";
 
-    // Create and append the copy link button
-    const copyButton = document.createElement("button");
-    copyButton.textContent = "Copy Link";
-    copyButton.style.marginLeft = "10px";
-    copyButton.addEventListener("click", (event) => {
-      event.stopPropagation(); // Prevent triggering file click
-      const fileUrl = `${window.location.origin}/${item.path}`; // Ensure correct local file URL
-      navigator.clipboard.writeText(fileUrl).then(() => {
-        alert("Link copied to clipboard");
+    async function fetchDirectory(path = '') {
+      try {
+        const res = await fetch(`${BASE_URL}${path}/index.json`);
+        if (!res.ok) throw new Error('Failed to load index');
+        const data = await res.json();
+        return data.map(item => ({
+          ...item,
+          fullPath: `${path}/${item.name}`
+        }));
+      } catch (err) {
+        console.error(`Error fetching ${path}:`, err);
+        return [];
+      }
+    }
+
+    async function buildTree(parentEl, path = '') {
+      const items = await fetchDirectory(path);
+      items.forEach(item => {
+        const li = document.createElement('li');
+        const icon = document.createElement('i');
+        const span = document.createElement('span');
+        span.textContent = item.name;
+        if (item.type === 'dir') {
+          icon.className = 'fas fa-folder';
+          li.appendChild(icon);
+          li.appendChild(span);
+          const sublist = document.createElement('ul');
+          li.appendChild(sublist);
+          li.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            li.classList.toggle('expanded');
+            if (li.classList.contains('expanded') && sublist.childElementCount === 0) {
+              await buildTree(sublist, item.fullPath);
+            }
+            renderFiles(item.fullPath);
+          });
+        } else {
+          icon.className = 'fas fa-file';
+          li.appendChild(icon);
+          li.appendChild(span);
+          li.addEventListener('click', () => window.open(`${BASE_URL}${item.fullPath}`, '_blank'));
+        }
+        parentEl.appendChild(li);
+      });
+    }
+
+    function renderFiles(path) {
+      fileList.innerHTML = '';
+      fetchDirectory(path).then(items => {
+        items.forEach(item => {
+          if (item.type === 'file') {
+            const row = document.createElement('div');
+            row.className = 'file-row';
+
+            const left = document.createElement('div');
+            left.innerHTML = `<i class="fas fa-file"></i>${item.name}`;
+
+            const actions = document.createElement('div');
+            actions.className = 'file-actions';
+
+            const btnLink = document.createElement('button');
+            btnLink.textContent = 'Copy Link';
+            btnLink.onclick = () => navigator.clipboard.writeText(`${BASE_URL}${item.fullPath}`);
+
+            const btnCopy = document.createElement('button');
+            btnCopy.textContent = 'Copy File Contents';
+            btnCopy.onclick = async () => {
+              try {
+                const res = await fetch(`${BASE_URL}${item.fullPath}`);
+                const text = await res.text();
+                await navigator.clipboard.writeText(text);
+              } catch {
+                alert("Failed to copy file contents");
+              }
+            };
+
+            const btnDownload = document.createElement('button');
+            btnDownload.textContent = 'Download';
+            btnDownload.onclick = async () => {
+              const link = document.createElement('a');
+              link.href = `${BASE_URL}${item.fullPath}`;
+              link.download = item.name;
+              link.click();
+            };
+
+            actions.append(btnLink, btnCopy, btnDownload);
+            row.append(left, actions);
+            fileList.appendChild(row);
+          }
+        });
+      });
+    }
+
+    async function getAllFiles(path = '') {
+      let files = [];
+      const items = await fetchDirectory(path);
+      for (const item of items) {
+        if (item.type === 'file') {
+          files.push({ ...item, fullPath: `${path}/${item.name}` });
+        } else if (item.type === 'dir') {
+          const subFiles = await getAllFiles(`${path}/${item.name}`);
+          files = files.concat(subFiles);
+        }
+      }
+      return files;
+    }
+
+    searchInput.addEventListener('input', async () => {
+      const query = searchInput.value.toLowerCase();
+      const allFiles = await getAllFiles();
+      const filtered = allFiles.filter(file => file.name.toLowerCase().includes(query));
+      fileList.innerHTML = '';
+      filtered.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'file-row';
+
+        const left = document.createElement('div');
+        left.innerHTML = `<i class="fas fa-file"></i>${item.name}`;
+
+        const actions = document.createElement('div');
+        actions.className = 'file-actions';
+
+        const btnLink = document.createElement('button');
+        btnLink.textContent = 'Copy Link';
+        btnLink.onclick = () => navigator.clipboard.writeText(`${BASE_URL}${item.fullPath}`);
+
+        const btnCopy = document.createElement('button');
+        btnCopy.textContent = 'Copy File Contents';
+        btnCopy.onclick = async () => {
+          try {
+            const res = await fetch(`${BASE_URL}${item.fullPath}`);
+            const text = await res.text();
+            await navigator.clipboard.writeText(text);
+          } catch {
+            alert("Failed to copy file contents");
+          }
+        };
+
+        const btnDownload = document.createElement('button');
+        btnDownload.textContent = 'Download';
+        btnDownload.onclick = async () => {
+          const link = document.createElement('a');
+          link.href = `${BASE_URL}${item.fullPath}`;
+          link.download = item.name;
+          link.click();
+        };
+
+        actions.append(btnLink, btnCopy, btnDownload);
+        row.append(left, actions);
+        fileList.appendChild(row);
       });
     });
-    listItem.appendChild(copyButton);
-  }
 
-  fileTree.appendChild(listItem);
-}
-
-// Fetch and display the directory structure
-async function displayLocalContents(path = basePath) {
-  const data = await fetchLocalContents(path);
-  if (data === null) return;
-
-  const fileTree = document.getElementById("file-tree");
-  const spinner = document.getElementById("spinner");
-  fileTree.innerHTML = "";
-
-  if (Array.isArray(data)) {
-    for (const item of data) {
-      if (item.type === "file" && item.name.endsWith(".author")) continue;
-      AddListItem(item, fileTree);
-    }
-  }
-
-if (path !== basePath) {
-    const listItem = document.createElement("li");
-    listItem.classList.add("backbutton");
-    listItem.textContent = "Back";
-
-    listItem.addEventListener("click", () => {
-        const parentPath = path.substring(0, path.lastIndexOf("/")) || basePath;
-        if (parentPath !== path) {
-            displayLocalContents(parentPath);
-        }
-    });
-
-    fileTree.appendChild(listItem);
-}
-
-  }
-
-  spinner.style.display = "none";
-
-
-// Toggle folder visibility
-function toggleFolder(folderElement, path) {
-  folderElement.classList.toggle("expanded");
-  const subfolder = folderElement.querySelector(".subfolder");
-  if (subfolder) {
-    displayLocalContents(path);
-  }
-}
-
-function OnSearch() {
-  const SearchQuery = SearchField.value.toLowerCase();
-  const Items = document.getElementById("file-tree").children;
-  Array.from(Items).forEach(function (listItem) {
-    if (listItem.id.toLowerCase().includes(SearchQuery)) {
-      listItem.hidden = false;
-    } else {
-      listItem.hidden = true;
-    }
-  });
-}
-
-SearchField.addEventListener("input", OnSearch);
-
-displayLocalContents(basePath);
-    </script>
-    <script>
-	    const Button = document.querySelector(".ModeButton");
-
-// Updated base URL to use GitHub Pages instead of raw GitHub content
-const linkbody = "https://impact.warpcore.live/";
-
-function downloadStringAsFile(content, fileName, contentType) {
-    const blob = new Blob([content], { type: contentType });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
-
-async function CopyToClipboard(Data) {
-    await navigator.clipboard.writeText(Data);
-}
-
-function ToggleToString(Bool) {
-    return Bool === "true" ? "false" : "true";
-}
-
-function ToggleButton(ToggleValue, savePreference = false) {
-    if (savePreference) {
-        setCookie("PreferCopy", ToggleValue);
-    }
-    
-    if (ToggleValue === "true") {
-        Button.textContent = "Copy code";
-        Button.dataset.toggle = "true";
-    } else {
-        Button.textContent = "Download";
-        Button.dataset.toggle = "false";
-    }
-}
-
-const getCookie = (name) => {
-    return document.cookie
-        .split("; ")
-        .find((row) => row.startsWith(name + "="))
-        ?.split("=")[1];
-};
-
-function setCookie(name, value) {
-    document.cookie = `${name}=${value}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
-}
-
-// Ensure a default setting for the "PreferCopy" cookie
-if (getCookie("PreferCopy") === undefined) {
-    setCookie("PreferCopy", "false");
-}
-
-// Encode filenames to handle spaces and special characters
-function encodeFileName(fileName) {
-    return encodeURIComponent(fileName);
-}
-
-async function fetchData(FileName) {
-    try {
-        const encodedFileName = encodeFileName(FileName);
-        const fileUrl = `${linkbody}${encodedFileName}`;
-        console.log("Fetching:", fileUrl);
-
-        const response = await fetch(fileUrl);
-        if (!response.ok) {
-            alert(`Failed to fetch extension code for: ${FileName}`);
-            return null;
-        }
-        return await response.text();
-    } catch (error) {
-        alert(`Failed to fetch extension code for: ${FileName}`);
-        return null;
-    }
-}
-
-async function Onclick(ExtName) {
-    const ExtData = await fetchData(ExtName);
-    if (ExtData === null) {
-        return;
-    }
-
-    if (getCookie("PreferCopy") === "true") {
-        await CopyToClipboard(ExtData);
-        alert("Copied to clipboard!");
-    } else {
-        downloadStringAsFile(ExtData, ExtName, "text/javascript");
-    }
-}
-
-// Toggle button functionality when clicked
-Button.addEventListener("click", () => {
-    let currentToggle = Button.dataset.toggle === "true" ? "false" : "true";
-    ToggleButton(currentToggle, true);
-});
-
-// Initialize button with saved preference
-ToggleButton(getCookie("PreferCopy"), false);
-    </script>
-    <style>
-	    /* Basic Reset stinky */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-body {
-    font-family: 'Arial', sans-serif;
-    color: #333;
-    padding: 20px;
-
-    /* Variables stinky */
-    --main-color: #e93a3a;
-    --hover-scale: 1.005
-}
-h2.ImpactHeader {
-    text-align: center;
-}
-h1 {
-    text-align: center;
-    color: #444;
-    margin-bottom: 20px;
-}
-
-/* File Tree Styles */
-.file-tree {
-    list-style: none;
-    padding-left: 20px;
-}
-
-.folder, .file, .backbutton {
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    margin: 5px 0;
-    cursor: pointer;
-    padding: 5px;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.folder:hover, .file:hover, .backbutton:hover{
-    background-color: var(--main-color); /* #4CAF50;*/
-    color: white;
-    transform: scale(var(--hover-scale));
-}
-
-.file:hover .ExtCredits {
-    color: white;
-    transform: scale(var(--hover-scale));
-}
-
-.folder::before {
-    content: '📁 ';
-    transition: transform 0.3s ease;
-}
-
-.file::before {
-    content: '📄 ';
-    transition: transform 0.3s ease;
-}
-
-.backbutton::before {
-    content: '◀ ';
-    transition: transform 0.3s ease;
-}
-
-/* Folder Expansion Animation */
-.folder + .subfolder {
-    display: none;
-    padding-left: 20px;
-    list-style: none;
-    opacity: 0;
-    max-height: 0;
-    transition: opacity 0.3s ease, max-height 0.5s ease;
-}
-
-.folder.expanded + .subfolder {
-    display: block;
-    opacity: 1;
-    max-height: 500px;
-}
-
-/* Loading Spinner */
-.spinner {
-    display: block;
-    margin: 0 auto;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    bottom: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.Credits{
-    text-align: center;
-}
-
-.filename{
-    text-decoration: none;
-    color: #333;
-    display: block;
-}
-
-.Link{
-    color: #7E017A;
-    text-decoration: none;
-}
-
-.Link:hover{
-    color: #BC03B5;
-}
-
-.DiscordServer{
-    text-align: center;
-}
-
-.DiscordServer img {
-    height: 1em;
-    margin-right: 0.5em;
-}
-
-.SearchBox{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 1%;
-}
-
-.Footer{
-    color: #000; /* Fallback for older browsers */
-    color: rgba(0, 0, 0, 0.5);
-    text-align: center;
-    padding-top: 5%;
-}
-
-    </style>
+    buildTree(sidebarTree);
+  </script>
 </body>
 </html>
