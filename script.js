@@ -533,9 +533,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileItem = document.createElement('li');
             fileItem.className = 'file-item';
             
+            const baseUrl = 'https://zinccore.github.io/ZincShelf';
+            const fullPath = `${baseUrl}/${file.path}`;
+            
             const fileLink = document.createElement('a');
             fileLink.className = 'file-link';
-            fileLink.href = file.path;
+            fileLink.href = fullPath;
             fileLink.setAttribute('aria-label', `${file.type}: ${file.name}`);
             
             if (file.type !== 'dir') {
@@ -570,6 +573,72 @@ document.addEventListener('DOMContentLoaded', () => {
             fileLink.appendChild(fileType);
             
             fileItem.appendChild(fileLink);
+
+            // Add action buttons for non-directory files
+            if (file.type !== 'dir') {
+                const buttonGroup = document.createElement('div');
+                buttonGroup.className = 'file-actions';
+                
+                // Download button
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'action-btn';
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                downloadBtn.title = 'Download file';
+                downloadBtn.onclick = (e) => {
+                    e.preventDefault();
+                    window.open(fullPath, '_blank');
+                };
+                
+                // Copy content button
+                const copyContentBtn = document.createElement('button');
+                copyContentBtn.className = 'action-btn';
+                copyContentBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                copyContentBtn.title = 'Copy file contents';
+                copyContentBtn.onclick = async (e) => {
+                    e.preventDefault();
+                    try {
+                        const response = await fetch(fullPath);
+                        const text = await response.text();
+                        await navigator.clipboard.writeText(text);
+                        showToast('File contents copied to clipboard');
+                    } catch (err) {
+                        showToast('Failed to copy file contents');
+                    }
+                };
+                
+                // Open link button
+                const openLinkBtn = document.createElement('button');
+                openLinkBtn.className = 'action-btn';
+                openLinkBtn.innerHTML = '<i class="fas fa-external-link-alt"></i>';
+                openLinkBtn.title = 'Open file link';
+                openLinkBtn.onclick = (e) => {
+                    e.preventDefault();
+                    window.open(fullPath, '_blank');
+                };
+                
+                // Copy link button
+                const copyLinkBtn = document.createElement('button');
+                copyLinkBtn.className = 'action-btn';
+                copyLinkBtn.innerHTML = '<i class="fas fa-link"></i>';
+                copyLinkBtn.title = 'Copy file link';
+                copyLinkBtn.onclick = async (e) => {
+                    e.preventDefault();
+                    try {
+                        await navigator.clipboard.writeText(fullPath);
+                        showToast('File link copied to clipboard');
+                    } catch (err) {
+                        showToast('Failed to copy file link');
+                    }
+                };
+                
+                buttonGroup.appendChild(downloadBtn);
+                buttonGroup.appendChild(copyContentBtn);
+                buttonGroup.appendChild(openLinkBtn);
+                buttonGroup.appendChild(copyLinkBtn);
+                
+                fileItem.appendChild(buttonGroup);
+            }
+            
             fileListElement.appendChild(fileItem);
             
             // If it's a directory, add a nested file list and fetch its contents
