@@ -310,11 +310,6 @@
     "path": "extensions/Scratch"
   },
   {
-    "name": "SharkPool",
-    "type": "dir",
-    "path": "extensions/SharkPool"
-  },
-  {
     "name": "shreder95ua",
     "type": "dir",
     "path": "extensions/shreder95ua"
