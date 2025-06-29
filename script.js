@@ -580,14 +580,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 buttonGroup.className = 'file-actions';
                 
                 // Download button
-                const downloadBtn = document.createElement('button');
-                downloadBtn.className = 'action-btn';
-                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
-                downloadBtn.title = 'Download file';
                 downloadBtn.onclick = (e) => {
                     e.preventDefault();
-                    window.open(fullPath, '_blank');
+                
+                    // Create a temporary <a> element
+                    const link = document.createElement('a');
+                    link.href = fullPath;
+                
+                    // Set filename explicitly from path
+                    const filename = file.path.split('/').pop();
+                    link.download = filename;
+                
+                    // Ensure it's added to DOM for Firefox compatibility
+                    document.body.appendChild(link);
+                
+                    // Simulate click
+                    link.click();
+                
+                    // Cleanup
+                    document.body.removeChild(link);
                 };
+
                 
                 // Copy content button
                 const copyContentBtn = document.createElement('button');
