@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileItem = document.createElement('li');
             fileItem.className = 'file-item';
             
-            const baseUrl = 'https://zinccore.github.io/ZincShelf';
+            const baseUrl = 'https://xshelf.github.io';
             const fullPath = `${baseUrl}/${file.path}`;
             
             const fileLink = document.createElement('a');
